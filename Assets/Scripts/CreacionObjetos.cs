@@ -94,13 +94,6 @@ public class CreacionObjetos : MonoBehaviour
             objetoSeleccionado = Instantiate(prefabs[objetoIndice], Vector3.zero, Quaternion.identity);
             objetoSeleccionado.SetActive(true);  // Activamos el objeto de previsualización
 
-            // Aseguramos que sea visible y tiene la mitad de opacidad para previsualizarlo
-            Renderer renderer = objetoSeleccionado.GetComponent<Renderer>();
-            if (renderer != null)
-            {
-                renderer.material.color = new Color(1f, 1f, 1f, 0.5f);  // Hacemos que sea semi-transparente (opcional)
-            }
-
             objetoColocado = false;  // Aseguramos que aún no se ha colocado el objeto
         }
     }

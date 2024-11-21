@@ -10,13 +10,23 @@ public class MoverObjetos : MonoBehaviour
 
     void Update()
     {
+        //LeanTween.scaleX(circulito, 1, 1f * Time.deltaTime).setEase(LeanTweenType.easeInOutQuad).setOnComplete(() =>
+        //{
+        //    LeanTween.scaleX(circulito, 2, 1f * Time.deltaTime).setEase(LeanTweenType.easeInOutQuad);
+        //});
+
+        //LeanTween.scaleZ(circulito, 1, 1f * Time.deltaTime).setEase(LeanTweenType.easeInOutQuad).setOnComplete(() =>
+        //{
+        //    LeanTween.scaleZ(circulito, 2, 1f * Time.deltaTime).setEase(LeanTweenType.easeInOutQuad);
+        //});
+        
+
         if (modoMover == true)
         {
             // Si el modoMover está activo y hay un objeto seleccionado, se puede mover
             if (objetoSeleccionado != null && siguiendoCursor)
             {
                 MoverObjetoConCursor();  // Llama a la función para mover el objeto con el cursor
-
             }
 
             // Al hacer clic, seleccionamos un objeto si no hay ninguno seleccionado
@@ -29,15 +39,16 @@ public class MoverObjetos : MonoBehaviour
             if (Input.GetMouseButtonUp(0) && objetoSeleccionado != null)
             {
                 ColocarObjetoConRaycast();  // Llama a la función para colocar el objeto
+                circulito.SetActive(false);
             }
-        }
-        
+        }   
     }
     // Función que mueve el objeto seleccionado con el cursor
     private void MoverObjetoConCursor()
     {
         // Desactivamos el objeto para que el raycast lo atraviese
         objetoSeleccionado.SetActive(false);
+        circulito.SetActive(false);
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
@@ -45,10 +56,12 @@ public class MoverObjetos : MonoBehaviour
         {
             // Mueve el objeto a la posición donde golpea el rayo
             objetoSeleccionado.transform.position = hit.point;
+            circulito.transform.position = hit.point;
         }
 
         // Reactivamos el objeto para que se vea en la nueva posición
         objetoSeleccionado.SetActive(true);
+        circulito.SetActive(true);
     }
 
     // Función que selecciona un objeto si el clic fue sobre un objeto cuyo nombre contenga "(Clone)"
@@ -61,16 +74,16 @@ public class MoverObjetos : MonoBehaviour
         {
             if (hit.collider != null && hit.collider.gameObject.name.Contains("(Clone)"))  // Comprobamos si el nombre contiene "(Clone)"
             {
-                circulito.SetActive(true);
+                //circulito.SetActive(true);
                 objetoSeleccionado = hit.collider.gameObject;  // Selecciona el objeto cuyo nombre contiene "(Clone)"
                 posicionOriginal = objetoSeleccionado.transform.position;  // Guardamos la posición original
                 siguiendoCursor = true;  // El objeto comienza a seguir el cursor
-                circulito.transform.parent = objetoSeleccionado.transform;
-                circulito.GetComponentInParent<Transform>();
+                //circulito.transform.parent = objetoSeleccionado.transform;
+                //circulito.GetComponentInParent<Transform>();
             }
         }
     }
-
+        
     // Función para colocar el objeto cuando el clic se suelta
     private void ColocarObjetoConRaycast()
     {
@@ -79,10 +92,12 @@ public class MoverObjetos : MonoBehaviour
         if (Physics.Raycast(ray, out hit))
         {
             objetoSeleccionado.transform.position = hit.point;  // Coloca el objeto en la nueva posición
+            circulito.transform.position = hit.point;
             siguiendoCursor = false;  // El objeto deja de seguir el cursor
-            circulito.transform.parent = null;
+            //circulito.transform.parent = null;
             objetoSeleccionado = null;
         }
+        circulito.SetActive(false);
     }
 
     // Esta función será llamada desde el botón en Unity para activar/desactivar el modoMover
@@ -91,7 +106,7 @@ public class MoverObjetos : MonoBehaviour
         modoMover = !modoMover;  // Alterna el valor de modoMover (activado/desactivado)
         if (modoMover == false)
         {
-            circulito.SetActive(false);
+            //circulito.SetActive(false);
         }
     }
     public void DesactivarModoMover()
