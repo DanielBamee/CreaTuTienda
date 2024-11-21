@@ -58,4 +58,11 @@ public class ControladorDeIU : MonoBehaviour
     {
         LeanTween.moveLocalY(menuObjetos, -180f, 0.5f).setEase(LeanTweenType.easeOutBack);
     }
+    public void SeActivaElModoMover()
+    {
+        LeanTween.moveLocalX(menuObjetos, 1000f, 1f).setEase(LeanTweenType.easeInOutBack).setOnComplete(() =>
+        {
+            menuObjetos.SetActive(false);
+        });
+    }
 }

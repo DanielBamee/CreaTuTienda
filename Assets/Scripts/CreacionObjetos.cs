@@ -5,305 +5,103 @@ using UnityEngine;
 public class CreacionObjetos : MonoBehaviour
 {
     [SerializeField]
-    GameObject prefabObject1;
-    GameObject object1;
-    bool objectB1 = false;
-    [SerializeField]
-    GameObject prefabObject2;
-    GameObject object2;
-    bool objectB2 = false;
-    [SerializeField]
-    GameObject prefabObject3;
-    GameObject object3;
-    bool objectB3 = false;
-    [SerializeField]
-    GameObject prefabObject4;
-    GameObject object4;
-    bool objectB4 = false;
-    [SerializeField]
-    GameObject prefabObject5;
-    GameObject object5;
-    bool objectB5 = false;
-    [SerializeField]
-    GameObject prefabObject6;
-    GameObject object6;
-    bool objectB6 = false;
-    [SerializeField]
-    GameObject prefabObject7;
-    GameObject object7;
-    bool objectB7 = false;
-    [SerializeField]
-    GameObject prefabObject8;
-    GameObject object8;
-    bool objectB8 = false;
-    [SerializeField]
-    GameObject prefabObject9;
-    GameObject object9;
-    bool objectB9 = false;
-    [SerializeField]
-    GameObject prefabObject10;
-    GameObject object10;
-    bool objectB10 = false;
-    [SerializeField]
-    GameObject prefabObject11;
-    GameObject object11;
-    bool objectB11 = false;
-    [SerializeField]
-    GameObject prefabObject12;
-    GameObject object12;
-    bool objectB12 = false;
-    [SerializeField]
-    GameObject prefabObject13;
-    GameObject object13;
-    bool objectB13 = false;
-    [SerializeField]
-    GameObject prefabObject14;
-    GameObject object14;
-    bool objectB14 = false;
-    [SerializeField]
-    GameObject prefabObject15;
-    GameObject object15;
-    bool objectB15 = false;
+    GameObject[] prefabs;  // Aquí arrastrarás todos tus prefabs en el Inspector
+    private GameObject objetoSeleccionado = null;  // Objeto seleccionado para mover
+    private GameObject objetoCreador = null;  // Referencia al objeto que estamos creando
+    private bool objetoColocado = false;  // Controla si el objeto ya ha sido colocado
+    private int objetoIndice = -1;  // Indica el índice del prefab que estamos utilizando para crear el objeto
 
-    private void Update()
+    // Método para seleccionar qué prefab crear sin instanciarlo
+    public void SeleccionarObjeto(int indice)
     {
-        if (objectB1 == true)
+        // Aseguramos que el índice es válido
+        if (indice >= 0 && indice < prefabs.Length)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit))
+            // Si ya existe un objeto creado y no ha sido colocado, lo destruimos
+            if (objetoCreador != null && !objetoColocado)
             {
-                 object1.transform.position = hit.point;
+                Destroy(objetoCreador);  // Destruir el objeto creado si no ha sido colocado
             }
-            object1.SetActive(true);
-        }
-        if (objectB2 == true)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit))
+            // Si hay un objeto previamente seleccionado (de previsualización), lo destruimos
+            if (objetoSeleccionado != null && !objetoColocado)
             {
-                object2.transform.position = hit.point;
+                Destroy(objetoSeleccionado);  // Elimina el objeto anterior de previsualización solo si no se ha colocado
             }
-            object2.SetActive(true);
-        }
-        if (objectB3 == true)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit))
+            objetoIndice = indice;  // Guardamos el índice del prefab seleccionado
+            IniciarCreacionDeObjeto();  // Iniciamos la creación del objeto
+        }
+    }
+
+    public void Update()
+    {
+        // Si tenemos un objeto seleccionado, lo movemos con el cursor
+        if (objetoSeleccionado != null)
+        {
+            SeguirCursor();  // Mueve el objeto seleccionando la posición del cursor
+
+            // Si se hace clic, colocamos el objeto en la escena
+            if (Input.GetMouseButtonDown(0))
             {
-                object3.transform.position = hit.point;
+                ColocarObjetoConRaycast();  // Coloca el objeto donde se hace clic
             }
-            object3.SetActive(true);
         }
-        if (objectB4 == true)
+    }
+
+    // Función para mover el objeto seleccionando la posición del cursor
+    private void SeguirCursor()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);  // Crea el rayo desde la posición del mouse
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
         {
-            RaycastHit hit;
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out hit))
+            // Mueve el objeto seleccionado a la posición donde el raycast golpea una superficie
+            objetoSeleccionado.transform.position = hit.point;
+        }
+    }
+
+    // Función para colocar el objeto usando Raycast
+    private void ColocarObjetoConRaycast()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);  // Crea el rayo desde la posición del mouse
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit))
+        {
+            // Solo creamos el objeto cuando lo colocamos, no antes
+            objetoCreador = Instantiate(prefabs[objetoIndice], hit.point, Quaternion.identity);
+
+            // Asegurarse de que el objeto creado tiene un BoxCollider (si no lo tiene, lo agregamos)
+            if (objetoCreador.GetComponent<BoxCollider>() == null)
             {
-                object4.transform.position = hit.point;
+                objetoCreador.AddComponent<BoxCollider>();  // Agregar un BoxCollider si no lo tiene
             }
-            object4.SetActive(true);
-        }
-        if (objectB5 == true)
-        {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
 
-            if (Physics.Raycast(ray, out hit))
+            Destroy(objetoSeleccionado);  // Elimina el objeto temporal de previsualización
+            objetoSeleccionado = null;  // Termina la selección del objeto
+            objetoColocado = true;  // Marcamos que el objeto ha sido colocado
+        }
+    }
+    // Función que será llamada cuando el jugador presiona un botón para crear un objeto
+    private void IniciarCreacionDeObjeto()
+    {
+        // Solo iniciamos la creación si hemos seleccionado un prefab
+        if (objetoIndice >= 0 && objetoIndice < prefabs.Length)
+        {
+            // Creamos el objeto de previsualización en una posición inicial
+            objetoSeleccionado = Instantiate(prefabs[objetoIndice], Vector3.zero, Quaternion.identity);
+            objetoSeleccionado.SetActive(true);  // Activamos el objeto de previsualización
+
+            // Aseguramos que sea visible y tiene la mitad de opacidad para previsualizarlo
+            Renderer renderer = objetoSeleccionado.GetComponent<Renderer>();
+            if (renderer != null)
             {
-                object5.transform.position = hit.point;
+                renderer.material.color = new Color(1f, 1f, 1f, 0.5f);  // Hacemos que sea semi-transparente (opcional)
             }
-            object5.SetActive(true);
-        }
-        if (objectB6 == true)
-        {
 
+            objetoColocado = false;  // Aseguramos que aún no se ha colocado el objeto
         }
-        if (objectB7 == true)
-        {
-
-        }
-        if (objectB8 == true)
-        {
-
-        }
-        if (objectB9 == true)
-        {
-
-        }
-        if (objectB10 == true)
-        {
-
-        }
-        if (objectB11 == true)
-        {
-
-        }
-        if (objectB12 == true)
-        {
-
-        }
-        if (objectB13 == true)
-        {
-
-        }
-        if (objectB14 == true)
-        {
-
-        }
-        if (objectB15 == true)
-        {
-
-        }
-    }
-    public void CrearObjeto1()
-    {
-        object1 = Instantiate(prefabObject1, Vector3.zero, Quaternion.identity);
-        objectB1 = true;
-    }
-    public void CrearObjeto2()
-    {
-        object2 = Instantiate(prefabObject2, Vector3.zero, Quaternion.identity);
-        objectB2 = true;
-    }
-    public void CrearObjeto3()
-    {
-        object3 = Instantiate(prefabObject3, Vector3.zero, Quaternion.identity);
-        objectB3 = true;
-    }
-    public void CrearObjeto4()
-    {
-        object4 = Instantiate(prefabObject4, Vector3.zero, Quaternion.identity);
-        objectB4 = true;
-    }
-    public void CrearObjeto5()
-    {
-        object5 = Instantiate(prefabObject5, Vector3.zero, Quaternion.identity);
-        objectB5 = true;
-    }
-    public void CrearObjeto6()
-    {
-        object6 = Instantiate(prefabObject6, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object6.transform.position = hit.point;
-        }
-        object6.SetActive(true);
-    }
-    public void CrearObjeto7()
-    {
-        object7 = Instantiate(prefabObject7, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object7.transform.position = hit.point;
-        }
-        object7.SetActive(true);
-    }
-    public void CrearObjeto8()
-    {
-        object8 = Instantiate(prefabObject8, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object8.transform.position = hit.point;
-        }
-        object8.SetActive(true);
-    }
-    public void CrearObjeto9()
-    {
-        object9 = Instantiate(prefabObject9, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object9.transform.position = hit.point;
-        }
-        object9.SetActive(true);
-    }
-    public void CrearObjeto10()
-    {
-        object10 = Instantiate(prefabObject10, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object10.transform.position = hit.point;
-        }
-        object10.SetActive(true);
-    }
-    public void CrearObjeto11()
-    {
-        object11 = Instantiate(prefabObject11, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object11.transform.position = hit.point;
-        }
-        object11.SetActive(true);
-    }
-    public void CrearObjeto12()
-    {
-        object12 = Instantiate(prefabObject12, Vector3.zero, Quaternion.identity); Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object12.transform.position = hit.point;
-        }
-        object12.SetActive(true);
-    }
-    public void CrearObjeto13()
-    {
-        object13 = Instantiate(prefabObject13, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object13.transform.position = hit.point;
-        }
-        object13.SetActive(true);
-    }
-    public void CrearObjeto14()
-    {
-        object14 = Instantiate(prefabObject14, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object14.transform.position = hit.point;
-        }
-        object14.SetActive(true);
-    }
-    public void CrearObjeto15()
-    {
-        object15 = Instantiate(prefabObject15, Vector3.zero, Quaternion.identity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-
-        if (Physics.Raycast(ray, out hit))
-        {
-            object15.transform.position = hit.point;
-        }
-        object15.SetActive(true);
     }
 }
