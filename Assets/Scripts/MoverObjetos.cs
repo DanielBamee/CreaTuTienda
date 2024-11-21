@@ -6,34 +6,38 @@ public class MoverObjetos : MonoBehaviour
     private GameObject objetoSeleccionado = null;  // El objeto actualmente seleccionado para mover
     private Vector3 posicionOriginal;  // Guardamos la posición original del objeto antes de moverlo
     private bool siguiendoCursor = false;  // Controla si el objeto sigue al cursor o no
+    public GameObject circulito;
 
     void Update()
     {
-        // Si el modoMover está activo y hay un objeto seleccionado, se puede mover
-        if (modoMover && objetoSeleccionado != null && siguiendoCursor)
+        if (modoMover == true)
         {
-            MoverObjetoConCursor();  // Llama a la función para mover el objeto con el cursor
-        }
+            // Si el modoMover está activo y hay un objeto seleccionado, se puede mover
+            if (objetoSeleccionado != null && siguiendoCursor)
+            {
+                MoverObjetoConCursor();  // Llama a la función para mover el objeto con el cursor
 
-        // Al hacer clic, seleccionamos un objeto si no hay ninguno seleccionado
-        if (Input.GetMouseButtonDown(0))
-        {
-            SeleccionarObjetoConRaycast();  // Llama a la función para seleccionar un objeto
-        }
+            }
 
-        // Cuando se suelta el clic, se coloca el objeto en la nueva posición
-        if (Input.GetMouseButtonUp(0) && objetoSeleccionado != null)
-        {
-            ColocarObjetoConRaycast();  // Llama a la función para colocar el objeto
+            // Al hacer clic, seleccionamos un objeto si no hay ninguno seleccionado
+            if (Input.GetMouseButtonDown(0))
+            {
+                SeleccionarObjetoConRaycast();  // Llama a la función para seleccionar un objeto
+            }
+
+            // Cuando se suelta el clic, se coloca el objeto en la nueva posición
+            if (Input.GetMouseButtonUp(0) && objetoSeleccionado != null)
+            {
+                ColocarObjetoConRaycast();  // Llama a la función para colocar el objeto
+            }
         }
+        
     }
-
     // Función que mueve el objeto seleccionado con el cursor
     private void MoverObjetoConCursor()
     {
         // Desactivamos el objeto para que el raycast lo atraviese
         objetoSeleccionado.SetActive(false);
-
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
 
@@ -57,9 +61,12 @@ public class MoverObjetos : MonoBehaviour
         {
             if (hit.collider != null && hit.collider.gameObject.name.Contains("(Clone)"))  // Comprobamos si el nombre contiene "(Clone)"
             {
+                circulito.SetActive(true);
                 objetoSeleccionado = hit.collider.gameObject;  // Selecciona el objeto cuyo nombre contiene "(Clone)"
                 posicionOriginal = objetoSeleccionado.transform.position;  // Guardamos la posición original
                 siguiendoCursor = true;  // El objeto comienza a seguir el cursor
+                circulito.transform.parent = objetoSeleccionado.transform;
+                circulito.GetComponentInParent<Transform>();
             }
         }
     }
@@ -69,11 +76,12 @@ public class MoverObjetos : MonoBehaviour
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-
         if (Physics.Raycast(ray, out hit))
         {
             objetoSeleccionado.transform.position = hit.point;  // Coloca el objeto en la nueva posición
             siguiendoCursor = false;  // El objeto deja de seguir el cursor
+            circulito.transform.parent = null;
+            objetoSeleccionado = null;
         }
     }
 
@@ -81,5 +89,13 @@ public class MoverObjetos : MonoBehaviour
     public void ToggleModoMover()
     {
         modoMover = !modoMover;  // Alterna el valor de modoMover (activado/desactivado)
+        if (modoMover == false)
+        {
+            circulito.SetActive(false);
+        }
+    }
+    public void DesactivarModoMover()
+    {
+        modoMover = false;
     }
 }
